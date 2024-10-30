@@ -8,21 +8,20 @@ import 'package:uuid/uuid.dart';
 
 void main() {
   initializeDateFormatting().then(
-    (_) => runApp(const Chat()),
+    (_) => runApp(
+      const SimpleChat(),
+    ),
   );
-  
 }
 
-class Chat extends StatelessWidget {
-  const Chat({super.key});  // per identificare univocamente tutti i widget
+class SimpleChat extends StatelessWidget {
+  const SimpleChat({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Test',
       theme: ThemeData(
-       
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
@@ -34,7 +33,7 @@ class Chat extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-  final String title; // non ne conosco il valore al momento della dichiarazione sarà inizzializzato runtime a differenza del const che viene inizializzato subito
+  final String title;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -43,21 +42,66 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<types.Message> _messaggi = [];
   final _user = const types.User(
-    id:'213123123jj312j3bjk2b3ekj12hek3juhekhk'
+    id: '82091008-a484-4a89-ae75-a22bf8d6f3ac',
   );
+
   @override
- void initState() {
+  void initState(){
     super.initState();
     _loadMessages();
   }
-  
+
+  void _loadMessages() async {
+    final response = await rootBundle.loadString('assets/messaggi.json');
+    final messages = (jsonDecode(response) as List).map((e) => types.Message.fromJson(e as Map<String, dynamic>)).toList();
+
+    setState(() {
+      _messaggi = messages;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    
-    throw UnimplementedError();
+    return Scaffold(
+      body: Chat(
+        messages: _messaggi,
+        onPreviewDataFetched: _handlePreviewDataFetched,
+        onSendPressed: _handleSendPressed,
+        showUserAvatars: true,
+        showUserNames: true,
+        user: _user,
+        theme: const DefaultChatTheme(
+          seenIcon: Text(
+            'read',
+            style: TextStyle(
+              fontSize: 10.0,
+            ),
+          )
+        ),
+      ),
+    );
+  }
+
+  void _handlePreviewDataFetched(types.TextMessage message, types.PreviewData previewData,){
+    final index = _messaggi.indexWhere((element) => element.id == message.id);
+    final updatedMessage = (_messaggi[index] as types.TextMessage).copyWith(previewData: previewData,);
+
+    setState(() {
+      _messaggi[index] = updatedMessage;
+    });
+  }
+
+  void _handleSendPressed(types.PartialText message){
+    final textMessage = types.TextMessage(author: _user, createdAt: DateTime.now().millisecondsSinceEpoch, id: const Uuid().v4(), text: message.text);
+
+    _addMessage(textMessage);
+  }
+
+  void _addMessage(types.Message message){
+    setState(() {
+      _messaggi.insert(0, message);
+    });
   }
 
 
-
-
-
+}
