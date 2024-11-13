@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:uuid/uuid.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   initializeDateFormatting().then(
@@ -52,12 +54,23 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _loadMessages() async {
-    final response = await rootBundle.loadString('assets/messaggi.json');
-    final messages = (jsonDecode(response) as List).map((e) => types.Message.fromJson(e as Map<String, dynamic>)).toList();
-
-    setState(() {
-      _messaggi = messages;
+  //   final response = await rootBundle.loadString('assets/messaggi.json');
+  //   final messages = (jsonDecode(response) as List).map((e) => types.Message.fromJson(e as Map<String, dynamic>)).toList();
+  //  setState(() {
+  //     _messaggi = messages;
+  //   });
+    final filepath = await getFilePath();
+    final file = File(filepath);
+    if (await file.exists()) {
+      final jsonString = await file.readAsString();
+      final jsonList = (jsonDecode(jsonString) as List).map((e) => types.Message.fromJson(e as Map<String,dynamic>)).toList();
+      setState(() {
+      _messaggi = jsonList;
     });
+     
+    }
+
+   
   }
 
   @override
@@ -97,10 +110,18 @@ class _MyHomePageState extends State<MyHomePage> {
     _addMessage(textMessage);
   }
 
-  void _addMessage(types.Message message){
+  void _addMessage(types.Message message) async {
+     final filepath = await getFilePath();
+      final file = File(filepath);
     setState(() {
       _messaggi.insert(0, message);
     });
+    final jsonString = jsonEncode(_messaggi);
+    await file.writeAsString(jsonString);
+  }
+  Future<String> getFilePath() async {
+    final directory = await getApplicationDocumentsDirectory();
+    return '${directory.path}/welcome_message.json';
   }
 
 
