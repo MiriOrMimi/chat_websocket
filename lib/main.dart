@@ -64,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _loadMessages();
 
-    socket = IO.io("http://10.1.0.6:3000", <String, dynamic>{
+    socket = IO.io("http://10.1.0.5:3000", <String, dynamic>{
       'transports': ['websocket']
     });
 
@@ -78,11 +78,11 @@ class _MyHomePageState extends State<MyHomePage> {
        final messageData = jsonDecode(data);
     final receivedMessage = types.TextMessage.fromJson(messageData);
 
-    final otherUser = const types.User(
-      id: 'other-user-id', 
-    );
+     final otherUser = const types.User(
+       id: 'other-user-id', 
+     );
 
-    final newMessage = receivedMessage.copyWith(author: otherUser);
+     final newMessage = receivedMessage.copyWith(author: otherUser);
 
     setState(() {
       _messaggi.insert(0, newMessage);
