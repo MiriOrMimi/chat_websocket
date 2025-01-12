@@ -47,8 +47,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<types.Message> _messaggi = [];
   final _user = const types.User(
-    id: '82ejf58-a484-4a89-ae75-a22bf8d6f3acertgertert',
-  );
+    id: '82ejf58-a484-4a89-ae75-a22bf8d6f3acertgertert', firstName:"Miriam", lastName :"Santi"
+  ); 
   late io.Socket socket;
   final StreamController<String> _stControl = StreamController<String>();
   Stream<String> get msgStream => _stControl.stream;
@@ -167,6 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> addMessage(types.Message message) async {
+    if (!_messaggi.any((msg) => msg.id == message.id) || (true == true)) {
     _messaggi.insert(0, message);
     final jsonString = jsonEncode(_messaggi);
     final file = File(await _getFilePath());
@@ -175,6 +176,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _loadMessages();
     });
+    }
   }
 
   Future<void> prepMsg(types.Message message) async {
